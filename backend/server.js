@@ -13,7 +13,7 @@ app.use("/uploads", express.static(path.join(__dirname, "uploads")));
 
 // MongoDB setup with error handling
 mongoose
-  .connect("mongodb://0.0.0.0/emailTemplates", { useNewUrlParser: true, useUnifiedTopology: true })
+  .connect("mongodb+srv://poojithukaradi06:C3hDRoda6wPobYsS@email.fro9y.mongodb.net/", { useNewUrlParser: true, useUnifiedTopology: true })
   .then(() => console.log("MongoDB Connected"))
   .catch((err) => console.error("MongoDB Connection Error:", err));
 
