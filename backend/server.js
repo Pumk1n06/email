@@ -4,16 +4,19 @@ const mongoose = require("mongoose");
 const fs = require("fs");
 const path = require("path");
 const cors = require("cors");
+require('dotenv').config();
 
 const app = express();
 const PORT = process.env.PORT || 5000
+const mongoURI = process.env.MONGO_URI
+
 app.use(express.json());
 app.use(cors());
 app.use("/uploads", express.static(path.join(__dirname, "uploads")));
 
 // MongoDB setup with error handling
 mongoose
-  .connect("mongodb+srv://poojithukaradi06:C3hDRoda6wPobYsS@email.fro9y.mongodb.net/", { useNewUrlParser: true, useUnifiedTopology: true })
+  .connect(mongoURI, { useNewUrlParser: true, useUnifiedTopology: true })
   .then(() => console.log("MongoDB Connected"))
   .catch((err) => console.error("MongoDB Connection Error:", err));
 
