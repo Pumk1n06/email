@@ -10,27 +10,29 @@ app.use(express.json());
 app.use(cors());
 app.use("/uploads", express.static(path.join(__dirname, "uploads")));
 
-// MongoDB setup
-mongoose.connect("mongodb://0.0.0.0:27017/emailTemplates", {
-  useNewUrlParser: true,
-  useUnifiedTopology: true,
-});
+// MongoDB setup with error handling
+mongoose
+  .connect("mongodb://0.0.0.0/emailTemplates", { useNewUrlParser: true, useUnifiedTopology: true })
+  .then(() => console.log("MongoDB Connected"))
+  .catch((err) => console.error("MongoDB Connection Error:", err));
 
-const EmailTemplate = mongoose.model("EmailTemplate", new mongoose.Schema({
+// Define EmailTemplate model while avoiding OverwriteModelError
+const emailTemplateSchema = new mongoose.Schema({
   title: String,
   content: String,
   image: String,
-  logo: String, // Added logo field
-}));
+  logo: String,
+});
+
+const EmailTemplate = mongoose.models.EmailTemplate || mongoose.model("EmailTemplate", emailTemplateSchema);
 
 // Get Email Layout
 app.get("/getEmailLayout", (req, res) => {
   fs.readFile(path.join(__dirname, "layout.html"), "utf8", (err, data) => {
     if (err) {
-      res.status(500).send("Error loading layout");
-    } else {
-      res.send(data);
+      return res.status(500).json({ error: "Error loading layout" });
     }
+    res.send(data);
   });
 });
 
@@ -38,6 +40,9 @@ app.get("/getEmailLayout", (req, res) => {
 const upload = multer({ dest: "uploads/" });
 
 app.post("/uploadImage", upload.single("image"), (req, res) => {
+  if (!req.file) {
+    return res.status(400).json({ error: "No file uploaded" });
+  }
   const imageUrl = `/uploads/${req.file.filename}`;
   res.json({ imageUrl });
 });
@@ -46,11 +51,10 @@ app.post("/uploadImage", upload.single("image"), (req, res) => {
 app.post("/uploadEmailConfig", async (req, res) => {
   try {
     const { title, content, image, logo } = req.body;
-    // Save the email template to the database
     await EmailTemplate.create({ title, content, image, logo });
-    res.send({ message: "Saved successfully" });
+    res.json({ message: "Saved successfully" });
   } catch (err) {
-    res.status(500).send("Error saving configuration");
+    res.status(500).json({ error: "Error saving configuration" });
   }
 });
 
@@ -59,17 +63,18 @@ app.post("/renderAndDownloadTemplate", async (req, res) => {
   try {
     const { title, content, image, logo } = req.body;
     const template = fs.readFileSync(path.join(__dirname, "layout.html"), "utf8");
+
     const renderedTemplate = template
       .replace("{{title}}", title)
       .replace("{{content}}", content)
-      .replace("{{image}}", image) // Replaced the image placeholder
-      .replace("{{logo}}", logo); // Replaced the logo placeholder
+      .replace("{{image}}", image || "")
+      .replace("{{logo}}", logo || "");
 
     res.setHeader("Content-Disposition", "attachment; filename=email_template.html");
     res.setHeader("Content-Type", "text/html");
     res.send(renderedTemplate);
   } catch (err) {
-    res.status(500).send("Error rendering template");
+    res.status(500).json({ error: "Error rendering template" });
   }
 });
 
