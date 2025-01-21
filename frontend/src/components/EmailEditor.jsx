@@ -13,7 +13,7 @@ const EmailEditor = () => {
   const [previewOpen, setPreviewOpen] = useState(false);
 
   useEffect(() => {
-    axios.get("http://localhost:5000/getEmailLayout").then((response) => {
+    axios.get("https://email-backend-fqg8.onrender.com/getEmailLayout").then((response) => {
       setEmailData(response.data);
     });
   }, []);
@@ -28,7 +28,7 @@ const EmailEditor = () => {
     formData.append("image", file);
 
     try {
-      const res = await axios.post("http://localhost:5000/uploadImage", formData);
+      const res = await axios.post("https://email-backend-fqg8.onrender.com/uploadImage", formData);
       setEmailData({ ...emailData, image: res.data.imageUrl });
     } catch (error) {
       console.error("Error uploading image", error);
@@ -41,7 +41,7 @@ const EmailEditor = () => {
     formData.append("image", file);
 
     try {
-      const res = await axios.post("http://localhost:5000/uploadImage", formData);
+      const res = await axios.post("https://email-backend-fqg8.onrender.com/uploadImage", formData);
       setEmailData({ ...emailData, logo: res.data.imageUrl });
     } catch (error) {
       console.error("Error uploading logo", error);
@@ -50,7 +50,7 @@ const EmailEditor = () => {
 
   const handleSave = async () => {
     try {
-      await axios.post("http://localhost:5000/uploadEmailConfig", emailData);
+      await axios.post("https://email-backend-fqg8.onrender.com/uploadEmailConfig", emailData);
       alert("Email template saved!");
     } catch (error) {
       console.error("Error saving template", error);
@@ -58,7 +58,7 @@ const EmailEditor = () => {
   };
 
   const handleDownload = () => {
-    window.location.href = "http://localhost:5000/renderAndDownloadTemplate";
+    window.location.href = "https://email-backend-fqg8.onrender.com/renderAndDownloadTemplate";
   };
 
   return (
